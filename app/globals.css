@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap');
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:'DM Sans',sans-serif;background:#f4f7fb;color:#14243b}
+button,input{font:inherit}button{cursor:pointer}
+.shell{min-height:100vh;background:radial-gradient(circle at 80% 0%,#e3edff 0,transparent 32%),#f5f7fb}
+.topbar{height:76px;background:#102b4e;color:white;display:flex;align-items:center;justify-content:space-between;padding:0 max(5vw,24px);box-shadow:0 8px 28px #102b4e18}
+.brand{display:flex;align-items:center;gap:12px;font-family:Manrope,sans-serif;font-weight:800;letter-spacing:.3px;font-size:20px}
+.logo{width:38px;height:38px;border-radius:12px;background:#fff;color:#12345a;display:grid;place-items:center;font-size:20px}
+.topmeta{font-size:12px;color:#c7d7ec;letter-spacing:1.2px}
+.main{max-width:1120px;margin:42px auto;padding:0 22px;display:grid;grid-template-columns:1.1fr .9fr;gap:24px}
+.intro{padding:30px 12px 20px 0}
+.eyebrow{color:#3168a8;font-size:12px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase}
+h1{font:800 clamp(34px,4vw,52px)/1.08 Manrope,sans-serif;letter-spacing:-1.8px;margin:15px 0;color:#112b4b}
+.lead{font-size:17px;line-height:1.7;color:#607087;max-width:570px}
+.pills{display:flex;gap:9px;flex-wrap:wrap;margin-top:24px}
+.pill{border:1px solid #d9e3f0;background:#fff;border-radius:999px;padding:9px 13px;font-size:12px;color:#52647c}
+.panel{background:#fff;border:1px solid #e3eaf2;border-radius:22px;box-shadow:0 18px 55px #1a355610;overflow:hidden}
+.panelhead{background:#102b4e;color:#fff;padding:20px 22px;display:flex;align-items:center;justify-content:space-between}
+.paneltitle{font:700 17px Manrope,sans-serif}
+.live{font-size:11px;color:#a8e4c4;display:flex;align-items:center;gap:7px}
+.dot{width:7px;height:7px;border-radius:50%;background:#48ce88;box-shadow:0 0 0 4px #48ce8822}
+.chat{padding:20px;height:390px;overflow:auto;background:linear-gradient(#fbfdff,#f7f9fc);display:flex;flex-direction:column;gap:13px}
+.msg{max-width:88%;padding:13px 15px;border-radius:15px;font-size:14px;line-height:1.55;white-space:pre-wrap}
+.bot{background:#edf3fa;color:#263d59;align-self:flex-start;border-bottom-left-radius:5px}
+.user{background:#173c67;color:white;align-self:flex-end;border-bottom-right-radius:5px}
+.composer{padding:16px 18px 18px;border-top:1px solid #edf1f5}
+.composerrow{display:flex;gap:9px}
+.input{flex:1;min-width:0;border:1px solid #dce5ef;border-radius:12px;padding:13px 14px;outline:none;color:#172c48}
+.input:focus{border-color:#4c82bd;box-shadow:0 0 0 3px #4c82bd18}
+.send{border:0;border-radius:12px;background:#163d68;color:#fff;padding:0 18px;font-weight:700}
+.mic{width:48px;border:1px solid #d7e2ee;background:#f4f8fd;color:#163d68;border-radius:12px;font-size:19px}
+.mic.active{background:#feecee;color:#bd3344;border-color:#f6c6cd}
+.hint{font-size:11px;color:#8a98aa;margin-top:10px;line-height:1.5}
+.suggestions{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.suggestion{font-size:11px;color:#48617e;background:#f4f7fb;border:1px solid #e1e8f0;border-radius:999px;padding:7px 10px}
+.side{display:flex;flex-direction:column;gap:16px}
+.info{padding:20px 22px}
+.info h3{font:700 15px Manrope,sans-serif;margin:0 0 13px}
+.doctor{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #eef2f6}
+.avatar{width:39px;height:39px;border-radius:13px;background:#e9f0fa;color:#28517e;display:grid;place-items:center;font-weight:700}
+.docname{font-weight:700;font-size:13px}.docmeta{font-size:11px;color:#8492a4;margin-top:3px}
+.status{margin-left:auto;font-size:10px;color:#26845a;background:#eaf8f0;padding:5px 8px;border-radius:999px}
+.booking{padding:20px 22px}
+.booking h3{font:700 15px Manrope,sans-serif;margin:0 0 12px}
+.empty{font-size:13px;color:#91a0b2;padding:12px 0}
+.bookingcard{border:1px solid #dce9e1;background:#f5fbf7;border-radius:14px;padding:14px}
+.bookingcard strong{font-size:14px}.bookingcard p{font-size:12px;color:#5f7182;line-height:1.6;margin:7px 0}
+.confirm{margin-top:10px;background:#16774f;border:0;color:white;padding:10px 13px;border-radius:9px;font-weight:700;font-size:12px}
+.footer{text-align:center;color:#91a0b2;font-size:11px;padding:0 20px 30px}
+@media(max-width:850px){.main{grid-template-columns:1fr;margin:24px auto}.intro{padding:5px}.chat{height:340px}.topbar{height:66px}.topmeta{display:none}}
