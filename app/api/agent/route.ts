@@ -17,8 +17,8 @@ const demoBookings: Booking[] = [];
 
 const tools: any[] = [
   { type:"function", function:{ name:"search_doctors", description:"Search the demo doctor directory by name, specialty or area.", parameters:{ type:"object", properties:{ query:{type:"string"} }, required:["query"], additionalProperties:false } } },
-  { type:"function", function:{ name:"check_availability", description:"Check demo availability for a doctor on a date and time. Use the exact doctor name.", parameters:{ type:"object", properties:{ doctor_name:{type:"string"}, date:{type:"string",description:"Date as the user stated it, e.g. 25 November 2026"}, time:{type:"string",description:"Time e.g. 5:00 PM"} }, required:["doctor_name","date","time"], additionalProperties:false } } },
-  { type:"function", function:{ name:"create_demo_booking", description:"Create a dummy appointment only after the user has explicitly confirmed the exact doctor, date and time.", parameters:{ type:"object", properties:{ doctor_name:{type:"string"}, date:{type:"string"}, time:{type:"string"} }, required:["doctor_name","date","time"], additionalProperties:false } } }
+  { type:"function", function:{ name:"check_availability", description:"Check demo availability for a doctor on a date and time.", parameters:{ type:"object", properties:{ doctor_name:{type:"string"}, date:{type:"string"}, time:{type:"string"} }, required:["doctor_name","date","time"], additionalProperties:false } } },
+  { type:"function", function:{ name:"create_demo_booking", description:"Create a dummy appointment only after the user explicitly confirms the exact doctor, date and time.", parameters:{ type:"object", properties:{ doctor_name:{type:"string"}, date:{type:"string"}, time:{type:"string"} }, required:["doctor_name","date","time"], additionalProperties:false } } }
 ];
 
 function runTool(name:string,args:any) {
@@ -31,16 +31,14 @@ function runTool(name:string,args:any) {
     const d=doctors.find(x=>x.name.toLowerCase()===String(args.doctor_name).toLowerCase());
     if(!d) return {available:false,message:"Doctor not found in demo directory."};
     const busy=demoBookings.some(b=>b.doctor===d.name && b.date.toLowerCase()===String(args.date).toLowerCase() && b.time.toLowerCase()===String(args.time).toLowerCase());
-    const available=d.slots.some(s=>s.toLowerCase()===String(args.time).toLowerCase()) && !busy;
-    return {doctor:d.name,clinic:d.clinic,date:args.date,time:args.time,available,alternatives:d.slots};
+    return {doctor:d.name,clinic:d.clinic,date:args.date,time:args.time,available:d.slots.some(s=>s.toLowerCase()===String(args.time).toLowerCase())&&!busy,alternatives:d.slots};
   }
   if(name==="create_demo_booking") {
     const d=doctors.find(x=>x.name.toLowerCase()===String(args.doctor_name).toLowerCase());
     if(!d) return {success:false,message:"Doctor not found."};
-    const available=d.slots.some(s=>s.toLowerCase()===String(args.time).toLowerCase());
     const busy=demoBookings.some(b=>b.doctor===d.name && b.date.toLowerCase()===String(args.date).toLowerCase() && b.time.toLowerCase()===String(args.time).toLowerCase());
-    if(!available || busy) return {success:false,message:"That slot is unavailable. Please check availability again."};
-    const booking={id:`WERO-DEMO-${String(demoBookings.length+1001)}`,doctor:d.name,specialty:d.specialty,clinic:d.clinic,date:args.date,time:args.time,status:"CONFIRMED (DEMO)"};
+    if(!d.slots.some(s=>s.toLowerCase()===String(args.time).toLowerCase())||busy) return {success:false,message:"That slot is unavailable. Please check availability again."};
+    const booking={id:`WERO-DEMO-${demoBookings.length+1001}`,doctor:d.name,specialty:d.specialty,clinic:d.clinic,date:args.date,time:args.time,status:"CONFIRMED (DEMO)"};
     demoBookings.push(booking);
     return {success:true,booking};
   }
@@ -48,27 +46,30 @@ function runTool(name:string,args:any) {
 }
 
 export async function POST(req:NextRequest) {
-  const key=process.env.OPENAI_API_KEY;
-  if(!key) return NextResponse.json({error:"The demo AI is not configured yet. Add OPENAI_API_KEY in Vercel project environment variables."},{status:503});
+  const key=process.env.GEMINI_API_KEY;
+  if(!key) return NextResponse.json({error:"Gemini is not configured. Add GEMINI_API_KEY in Vercel environment variables."},{status:503});
   try {
-    const { messages } = await req.json();
-    const client=new OpenAI({apiKey:key});
-    const system=`You are WERO AI, a friendly healthcare appointment booking assistant for a founder demonstration. This is a fictional demo using dummy doctors and bookings only. Never claim a real appointment has been made. Supported specialties are Dentistry, Dermatology and Psychiatry. Today is 17 November 2026. Interpret relative dates carefully. Ask a concise clarification if doctor, date or time is ambiguous. Search the directory when needed. Always check availability before offering a slot. Show doctor, specialty, clinic, date and time and ask the user to explicitly confirm before calling create_demo_booking. Only call create_demo_booking after explicit confirmation. If the requested slot is unavailable, suggest available times. Do not provide medical diagnosis or treatment advice. Be concise and natural for a spoken conversation.`;
+    const {messages}=await req.json();
+    const client=new OpenAI({apiKey:key,baseURL:"https://generativelanguage.googleapis.com/v1beta/openai/"});
+    const system=`You are WERO AI, a friendly healthcare appointment booking assistant for a founder demonstration using fictional dummy data only. Never claim a real appointment has been made. Supported specialties: Dentistry, Dermatology and Psychiatry. Today is 17 November 2026. Ask a concise clarification if doctor, date or time is ambiguous. Search the directory when needed. Always check availability before offering a slot. Show doctor, specialty, clinic, date and time and ask the user to explicitly confirm before calling create_demo_booking. Only call create_demo_booking after explicit confirmation. If unavailable, suggest available times. Do not provide medical diagnosis or treatment advice. Be concise and natural for spoken conversation.`;
     let chat:any[]=[{role:"system",content:system},...(messages||[]).slice(-12)];
     for(let i=0;i<5;i++){
-      const completion=await client.chat.completions.create({model:process.env.OPENAI_MODEL||"gpt-4.1-mini",messages:chat,tools,tool_choice:"auto",temperature:0.2});
-      const choice=completion.choices[0];
-      if(!choice.message.tool_calls?.length) return NextResponse.json({reply:choice.message.content||"Sorry, I couldn't complete that request.",bookings:demoBookings});
-      chat.push(choice.message);
-      for(const call of choice.message.tool_calls){
+      const completion=await client.chat.completions.create({
+        model:process.env.GEMINI_MODEL||"gemini-3.8-flash",
+        messages:chat,tools,tool_choice:"auto",temperature:0.2
+      });
+      const msg=completion.choices[0].message;
+      if(!msg.tool_calls?.length) return NextResponse.json({reply:msg.content||"Sorry, I couldn't complete that request.",bookings:demoBookings});
+      chat.push(msg);
+      for(const call of msg.tool_calls){
         const args=JSON.parse(call.function.arguments||"{}");
-        const output=runTool(call.function.name,args);
-        chat.push({role:"tool",tool_call_id:call.id,content:JSON.stringify(output)});
+        chat.push({role:"tool",tool_call_id:call.id,content:JSON.stringify(runTool(call.function.name,args))});
       }
     }
     return NextResponse.json({reply:"I couldn't complete that step. Please try again.",bookings:demoBookings});
   } catch(e:any) {
-    console.error(e);
-    return NextResponse.json({error:"The AI service could not process this request. Check the API key and try again."},{status:500});
+    console.error("Gemini API error:",e);
+    const detail=e?.status===429?"Gemini free-tier limit reached. Wait and try again later.":e?.status===403||e?.status===400?"Gemini rejected the request. Check that the API key and selected model are available to your AI Studio project.":"Gemini could not process this request. Check your API key and try again.";
+    return NextResponse.json({error:detail},{status:500});
   }
 }
